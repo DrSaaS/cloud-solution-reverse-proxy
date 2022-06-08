@@ -80,3 +80,18 @@ Route Table > Subnet Associations > Edit Routes > Save Associations
 - For the destination 0.0.0.0/0 (allow from anywhere) with target as the internet gateway acme-igw
 
 ![Public route table for inernet access](./images/public-internet.JPG)
+
+---
+### CREATE A NAT GATEWAY IN THE PUBLIC SUBNET AND ATTACH AN ELASTIC IP 
+---
+- I created an elastic IP address named acme-NAT-elastic-ip
+
+- I created the NAT gateway and named it acme-ngw
+
+- Next, I attached the elastic ip to the NAT gateway in public subnet 1.
+- A NAT gateway must be in a public subnet so that it can reach the internet.
+
+ For the destination 0.0.0.0/0 (allow from anywhere) with target as the nat gateway acme-ngw
+
+
+ 
