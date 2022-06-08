@@ -124,6 +124,52 @@ Allow Port 80/443 access from Nginx sg
 ![Internal LB Security Group](./images/int-alb-sg.JPG)
 
 
+5. Web Server   acme-webserver-sg
+Allow SSH from the Bastion
+Allow access to port 90 and 443 from the internal load balancer acme-int-lb-sg
+
+6. Data Layer   acme-datalayer-sg   (RDS and NFS)
+Allow mysql access from Bastion
+Allow mysql access from webserver
+Allow NFS from webserver
+
+![Data Layer Security Group](./images/datalayer-sg.JPG)  
+
+
+---
+### CREATE CERTIFICATE FOR SSL for workachoo.com
+---
+Certificate requested from AWS Certificate manager for *.workachoo.com
+I selected DNS validation option
+Tag: acme-cert
+
+
+
+
+
+
+
+---
+### CREATE AMAZON EFS FILE SYSTEM
+---
+The mount target needs to be in the same subnet as the resource that needs to access it
+In this case , It is private-subnet1 and private-subnet2 i.e the webservers 
+The security group is the acme-datalayer-sg
+
+![Mount targets](./images/mount-targets.JPG) 
+
+---
+### CREATE ACCESS POINTS FOR NFS FOR WORDPRESS AND TOOLING
+---
+
+[Access Points](./images/access-points-created.JPG)
+
+
+
+
+
+
+
 
 
 
