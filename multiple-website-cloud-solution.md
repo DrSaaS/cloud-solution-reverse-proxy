@@ -61,12 +61,22 @@ acme-public-rtb
 - public-subnet-2        [In Availability Zone B eu-west-2b]   10.0.2.0/24
 
 ![Subnet Association](./images/subnet-associations.JPG)
+
+Route Table > Subnet Associations > Edit Routes > Save Associations
+
+
+
+
 ---
-### CREATE INTERNET GATEWAY
+### CREATE INTERNET GATEWAY AND ATTACH TO THE VPC acme-vpc
 ---
-- The next step is to create an Internet Gateway and attach it to the VPC.
-
-- I created an internet gateway and named it acme-igw
+- I created an internet gateway acme-igw and attached it to acme-vpc
 
 
-![Internet Gateway](./images/igw.JPG)
+![Internet Gateway](./images/igw-vpc.JPG)
+---
+### CONFIGURE PUBLIC ROUTE TABLE FOR INTERNET ACCESS
+---
+- For the destination 0.0.0.0/0 (allow from anywhere) with target as the internet gateway acme-igw
+
+![Public route table for inernet access](./images/public-internet.JPG)
