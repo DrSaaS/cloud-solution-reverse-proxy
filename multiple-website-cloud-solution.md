@@ -164,10 +164,74 @@ The security group is the acme-datalayer-sg
 
 [Access Points](./images/access-points-created.JPG)
 
+---
+### CREATE A KMS KEY AND A SUBNET GROUP FOR THE RDS SERVICE
+---
+The next step is to set up the Amazon RDS database.
+
+Before that, we need to set up our KMS Key to encrpt the database instance.
+We shall also neet to create a database subnet group.
 
 
+- Create a key
+- Symetric (Default)
+- KMS 
+- Single region (default)
+- Next
+- Alias: acme-rds-key
+- Description: KMS for the RDS Instance
+
+- Tags - Name: acme-rds-key
+
+-Next
+-Key adminstrator: Bandele
+
+- KMS key successfully created.
+
+### Next I created the subnet group
+
+- Subnet groups
+- Create DB Subnet Group
+- Name: acme-rds-subnet
+- Description: For RDS subnets
+- Add subnets (private subnet 3 and 4)
+-- acme-private-subnet-3       [In Availability Zone A eu-west-2a]   10.0.5.0/24
+-- acme-private-subnet-4       [In Availability Zone B eu-west-2b]   10.0.6.0/24
+
+- Create
+- DB subnet group successfully created
 
 
+### The next step is to create the database
+
+- Dashboard
+- Create Database (Amazon Aurora - Mysql ansd PostgreSQL compatible database)
+
+- creation method: Standard create
+- Engine options: MySQL
+- Edition: MySQL Community
+- Version: 8.0.28
+
+
+Templates: Free Tier 9(To avoid costs but unable to encrpt with KMS Key)
+
+DB Instance identifier: acme-database
+
+Master Username: acmeadmin
+Master Password: acmepassword
+Public Access?:No
+VPC Security Group: acme-datalayer-sg
+Multi AZ deloyment disabled as free tier selected
+Availability Zone: eu-west-2a but doesn't matter
+
+Database Authentication: Password Authentication
+Initial Database Name: Test
+- I left all the others as default
+Encryption: Encrypt with KMS deselected.
+
+- Create database
+
+- Database successfully created
 
 
 
