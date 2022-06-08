@@ -108,7 +108,19 @@ Route Table > Subnet Associations > Edit Routes > Save Associations
 2. Bastion     acme-bastion-sg
 Allow SSH from our device IP only
 
-![Bastion SG](./images/bastion-sg.JPG)
+![Bastion SG](./images/bastion-sg.JPG)  
+
+3. Nginx Reverse  proxy server acme-nginx-sg
+Allow access from port 80 and 443 from the external load balancer only 
+It will only allow access from the external load balancer security group acme-ext-alb-sg  
+It will allow SSH access from our Bastion
+
+![Nginx SG](./images/nginx-sg.JPG)  
+
+
+4. Internal Load Balancer  acme-int-lb
+Allow Port 80/443 access from Nginx sg
+
 
 
 
