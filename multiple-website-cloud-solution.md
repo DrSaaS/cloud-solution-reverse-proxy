@@ -101,7 +101,7 @@ Route Table > Subnet Associations > Edit Routes > Save Associations
  1. External Load Balancer   acme-ext-alb-sg
  Allow http/https from anywhere. OPen port 80 and 443 from 0.0.0.0/0
 
- ![External LB \security group](./images/ext-alb-sg.JPG)
+ ![External LB Security group](./images/ext-alb-sg.JPG)
 
 
 
@@ -118,8 +118,22 @@ It will allow SSH access from our Bastion
 ![Nginx SG](./images/nginx-sg.JPG)  
 
 
-4. Internal Load Balancer  acme-int-lb
+4. Internal Load Balancer  acme-int-alb
 Allow Port 80/443 access from Nginx sg
+
+![Internal LB Security Group](./images/int-alb-sg.JPG)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
