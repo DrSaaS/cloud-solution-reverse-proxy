@@ -98,5 +98,22 @@ Route Table > Subnet Associations > Edit Routes > Save Associations
  ### CREATE THE SECURITY GROUPS
  ---
 
- 1. External Load Balancer   acme-ext-alb
+ 1. External Load Balancer   acme-ext-alb-sg
  Allow http/https from anywhere. OPen port 80 and 443 from 0.0.0.0/0
+
+ ![External LB \security group](./images/ext-alb-sg.JPG)
+
+
+
+2. Bastion     acme-bastion-sg
+Allow SSH from our device IP only
+
+![Bastion SG](./images/bastion-sg.JPG)
+
+
+
+
+
+
+
+
