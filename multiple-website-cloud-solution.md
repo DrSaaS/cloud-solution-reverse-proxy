@@ -94,4 +94,9 @@ Route Table > Subnet Associations > Edit Routes > Save Associations
  For the destination 0.0.0.0/0 (allow from anywhere) with target as the nat gateway acme-ngw
 
 
- 
+ ---
+ ### CREATE THE SECURITY GROUPS
+ ---
+
+ 1. External Load Balancer   acme-ext-alb
+ Allow http/https from anywhere. OPen port 80 and 443 from 0.0.0.0/0
