@@ -235,21 +235,286 @@ Encryption: Encrypt with KMS deselected.
 
 
 
+### Create AMI
+---
+- I launched three Red Hat Instances.
+
+### INSTALLATION ON BASTION INSTANCE
+---
+```
+yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+
+yum install -y dnf-utils http://rpms.remirepo.net/enterprise/remi-release-8.rpm
+
+yum install wget vim python3 telnet htop git mysql net-tools chrony -y
+
+systemctl start chronyd
+
+systemctl enable chronyd
+```
+
+
+---
+### Nginx AMI Installation
+---
+```
+yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+
+yum install -y dnf-utils http://rpms.remirepo.net/enterprise/remi-release-8.rpm
+
+yum install wget vim python3 telnet htop git mysql net-tools chrony -y
+
+systemctl start chronyd
+
+systemctl enable chronyd
+
+```
+
+---
+### Configure selinux policies for the nginx server
+---
+```
+setsebool -P httpd_can_network_connect=1
+setsebool -P httpd_can_network_connect_db=1
+setsebool -P httpd_execmem=1
+setsebool -P httpd_use_nfs 1
+```
+
+---
+We shall install amazon efs utils for mounting the target on the Elastic file system
+---
+git clone https://github.com/aws/efs-utils
+
+cd efs-utils
+
+yum install -y make
+
+yum install -y rpm-build
+
+make rpm 
+
+yum install -y  ./build/amazon-efs-utils*rpm
 
 
 
 
 
+---
+### Setting up self-signed certificate for the nginx instance
+---
+sudo mkdir /etc/ssl/private
+
+sudo chmod 700 /etc/ssl/private
+
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/ACS.key -out /etc/ssl/certs/ACS.crt
+
+sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
+
+###                                  ### BREAK ### BREAK ### BREAK - CONTINUE FROM WEBSERVER INSTALLATION
+---
+### WEBSERVER INSTALLATION
+---
+
+```
+yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+
+yum install -y dnf-utils http://rpms.remirepo.net/enterprise/remi-release-8.rpm
+
+yum install wget vim python3 telnet htop git mysql net-tools chrony -y
+
+systemctl start chronyd
+
+systemctl enable chronyd
+```
+
+### Configure selinux policies for the Webserver
+---
+```
+setsebool -P httpd_can_network_connect=1
+setsebool -P httpd_can_network_connect_db=1
+setsebool -P httpd_execmem=1
+setsebool -P httpd_use_nfs 1
+```
+
+
+--
+We shall install amazon efs utils for mounting the target on the Elastic file system
+---
+```
+git clone https://github.com/aws/efs-utils
+
+cd efs-utils
+
+yum install -y make
+
+yum install -y rpm-build
+
+make rpm 
+
+yum install -y  ./build/amazon-efs-utils*rpm
+```
+
+---
+Setting up self-signed certificate for the apache webserver instance
+---
+```
+yum install -y mod_ssl
+
+openssl req -newkey rsa:2048 -nodes -keyout /etc/pki/tls/private/ACS.key -x509 -days 365 -out /etc/pki/tls/certs/ACS.crt
+
+vi /etc/httpd/conf.d/ssl.conf
+```
+I opened the ssl.conf file and changed localhost.crt and localhost.key to ACS.crt and ACS.key respectively
+
+ 
+---
+### Next, I created AMI's from the instances
+---
+
+
+Instance Webserver AMI
+---
+- Actions
+- Images and Templates
+- Create Image  Image Name: acme-webserver-ami
+- Description: AMI For Webserver
+- Tag image and snapshot together (default)
+- Create Image
+
+
+Instance Nginx AMI
+---
+-- Actions
+-- Images and Templates
+-- Create Image  Image Name: acme-nginx-ami
+-- Description: AMI For Nginx
+-- Tag image and snapshot together (default)
+-- Create Image
+
+
+Instance Bastion AMI
+---
+-- Actions
+-- Images and Templates
+-- Create Image  Image Name: acme-bastion-ami
+-- Description: AMI For Bastion
+-- Tag image and snapshot together (default)
+-- Create Image
+
+---
+Time to start creating the Target Groups for the Load Balancers
+---
+NGINX
+---
+-- Load balancing
+-- Target Groups
+-- Target Type: Instance
+-- Target Group Name: acme-nginx-target
+
+-- Port https 443
+
+-- Protocol version http1
+
+
+-- Healthcheck path: /healthstatus
+
+-- Tag: acme-nginx-target
+-- Next
+
+WORDPRESS
+---
+-- Target Type: Instance
+-- Target Group Name: acme-wordpress-target
+
+-- Port https 443
+
+-- Protocol version http1
+
+
+-- Healthcheck path: /healthstatus
+
+-- Tag: acme-wordpress-target
+-- Next
+
+
+TOOLING
+---
+
+-- Target Type: Instance
+-- Target Group Name: acme-tooling-target
+
+-- Port https 443
+
+-- Protocol version http1
+
+
+-- Healthcheck path: /healthstatus
+
+-- Tag: acme-tooling-target
+-- Next
+
+![Target Groups](./images/target-groups.JPG)
 
 
 
+### Create the Loadbalancers
+
+Load balancer type: Application Load Balancer
+Name: acme-ext-lb
+Load balancer protocol: https 
+Load balancer port:443
+vpc: acme-vpc
+Availability zones: Public subnet1 eu-wes-2a and public subnet2 eu-west-2b
+
+Tag: acme-ext-lb
+security grouo: acme-ext-lb-sg
+
+Target group: existing target group 
+Name: acme-nginx-target
+
+protocol: https
+port: 443
+
+' Health checks
+protocol: https
+path: /healthstatus
+
+- Create
 
 
+Load balancer type: Application Load Balancer
+Name: acme-int-lb
+Load balancer protocol: https 
+Load balancer port:443
+vpc: acme-vpc
+Availability zones: Private subnet1 eu-west-2a and private subnet2 eu-west-2b
 
+Tag: acme-int-lb
+security group: acme-int-lb-sg
 
+Target group: existing target group 
+Name: acme-wordpress-target  - This will meke it the default target. I will configure the rules for tooling target.
 
+protocol: https
+port: 443
 
+' Health checks
+ptotocol: https
+path: /healthstatus
 
+- Create
+- Go to listeners
+- Select default listener
+- View or Edit rules
 
+- Insert rule
+- Add condition
 
+if host header: tooling.workachoo.com
+or www.tooling.workachoo.com
 
+- add action: acme-tooling-target
+
+![Internal LB listeners](./images/int-lb-listeners.JPG)
+
+### LAUNCH TEMPLATES TO BE CREATED##########################################################
