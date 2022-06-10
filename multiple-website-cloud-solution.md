@@ -515,6 +515,108 @@ or www.tooling.workachoo.com
 
 - add action: acme-tooling-target
 
-![Internal LB listeners](./images/int-lb-listeners.JPG)
+![Internal LB listeners](./images/int-lb-listeners.JPG)  
 
+---
 ### LAUNCH TEMPLATES TO BE CREATED##########################################################
+---
+
+# BASTION LAUNCH TEMPLATE
+---
+acme-bastion-template
+
+description: Template for bastion
+
+Application and OS  Images: acme-bastion-ami
+
+Instance type: t2.micro
+
+Key-Pair: ansiblekey
+
+
+Note: dont choose security group here
+
+Tag:  Name
+### ADD NETWORK INTERFACE
+Subnet:acme-public-subnet-1
+
+security group acme-bastion-sg
+
+Auto-assign public IP: enable
+
+userdata:
+```
+#!/bin/bash 
+yum install -y mysql 
+yum install -y git tmux 
+yum install -y ansible
+```
+
+- Create launch template
+- Successfully created
+
+---
+
+Create launch template
+NGINX LAUNCH TEMPLATE
+---
+acme-nginx-template
+
+description: Template for bastion
+
+Application and OS  Images: acme-nginx-ami
+
+Instance type: t2.micro
+
+Key-Pair: ansiblekey
+
+Tag:  Name
+
+Subnet:acme-public-subnet-1
+
+security group acme-nginx-revproxy-sg
+
+Auto-assign public IP: enable
+
+userdata:
+```
+#!/bin/bash
+yum install -y nginx
+systemctl start nginx
+systemctl enable nginx
+git clone https://github.com/Livingstone95/ACS-project-config.git
+mv /ACS-project-config/reverse.conf /etc/nginx/
+mv /etc/nginx/nginx.conf /etc/nginx/nginx.conf-distro
+cd /etc/nginx/
+touch nginx.conf
+sed -n 'w nginx.conf' reverse.conf
+systemctl restart nginx
+rm -rf reverse.conf
+rm -rf /ACS-project-config
+
+```
+
+- Create luanch template
+- Successfully created
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
