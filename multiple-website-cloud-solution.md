@@ -994,4 +994,58 @@ Wordpress and tooling instances failed health checks and had the following statu
 
 
 
+TROUBLE SHOOTING INSTANCES
+1. SECURITY Group correct in launch template. Choose edit to check
+2. Check in correct subnet
+3. Check Userdata
+4. Check Target group andnrefresh a few times
+5. check Target group health checks > path if /healthstatus
+6. 
+SSH INTO OUR BASTION ssh -A ec2-user@publicip
+ssh -A ec2-user@18.130.38.194
 
+ssh into failed instances 
+ssh ec2-user@privateip
+```
+df -h
+```
+This checks if mounted properly 
+![Is it mounted](./images/isitmounted.JPG)
+
+Check conf file
+```
+vi /etc/httpd/conf.d/ssl.conf
+
+```
+cd into /var/www/html/ to see if /healthstatus exists
+
+```
+cd  /var/www/html/
+
+ls
+```
+
+Whether it exists or not, create healthstatus
+```
+touch healthstatus
+
+ls -l
+```
+
+Solution
+---
+The NAT Gateway was in a private subnet instead of a public subnet.
+- A new NAT Gateway was created and the old one deleted.
+- I also generated a new elastic IP for the NAT Gateway and released the former.
+
+After a couple of refreshes, the instances became healthy
+
+I was able to reach wordpress.workachoo.com and tooling.workachoo.com
+
+
+![Wordpress](./images/wordpress2.JPG)
+![Tooling](./images/tooling.JPG)
+
+---
+## End of Project 
+---
