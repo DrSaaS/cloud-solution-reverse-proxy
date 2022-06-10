@@ -668,8 +668,144 @@ http {
 
     ```
 
-- Create luanch template
+- Create launch template
 - Successfully created
+
+
+### WORDPRESS LAUNCH TEMPLATE
+---
+Create launch template
+WORDPRESS LAUNCH TEMPLATE
+---
+acme-wordpress-template
+
+description: Template for bastion
+
+Application and OS  Images: acme-webserver-ami
+
+Instance type: t2.micro
+
+Key-Pair: ansiblekey
+
+Tag:  Name: acme-wordpress-template
+
+Subnet:acme-private-subnet-1
+
+security group acme-webserver-sg
+
+Auto-assign public IP: disable - Connects through NAT Gateway
+
+### To get the accesspoint below, we musts go to our AWS file system > Access points > click on attach and copy the EFS mount helper code for wordpress
+```
+sudo mount -t efs -o tls,accesspoint=fsap-05ca7e81b9bc952f0 fs-0786f6c06023ceac5:/ efs
+
+```
+userdata:
+```
+#!/bin/bash
+mkdir /var/www/
+sudo mount -t efs -o tls,accesspoint=fsap-05ca7e81b9bc952f0 fs-0786f6c06023ceac5:/ /var/www/
+yum install -y httpd 
+systemctl start httpd
+systemctl enable httpd
+yum module reset php -y
+yum module enable php:remi-7.4 -y
+yum install -y php php-common php-mbstring php-opcache php-intl php-xml php-gd php-curl php-mysqlnd php-fpm php-json
+systemctl start php-fpm
+systemctl enable php-fpm
+wget http://wordpress.org/latest.tar.gz
+tar xzvf latest.tar.gz
+rm -rf latest.tar.gz
+cp wordpress/wp-config-sample.php wordpress/wp-config.php
+mkdir /var/www/html/
+cp -R /wordpress/* /var/www/html/
+cd /var/www/html/
+touch healthstatus
+sed -i "s/localhost/acme-database.cpil7ry1shut.eu-west-2.rds.amazonaws.com/g" wp-config.php 
+sed -i "s/username_here/acmeadmin/g" wp-config.php 
+sed -i "s/password_here/acmepassword/g" wp-config.php 
+sed -i "s/database_name_here/wordpressdb/g" wp-config.php 
+chcon -t httpd_sys_rw_content_t /var/www/html/ -R
+systemctl restart httpd
+
+
+```
+
+- Create launch template
+- Successfully created
+
+
+In the userdata, we must update
+1. username
+2. password
+3. database name - create wordpressdb as not yet existent in rds using bastion
+4. update RDS endpoint (acme-database.cpil7ry1shut.eu-west-2.rds.amazonaws.com}
+
+
+### Next is to create the launch template for our tooling website
+
+Create launch template
+TOOLING LAUNCH TEMPLATE
+---
+acme-tooling-template
+
+description: Template for bastion
+
+Application and OS  Images: acme-webserver-ami
+
+Instance type: t2.micro
+
+Key-Pair: ansiblekey
+
+Tag:  Name: acme-tooling-template
+
+Subnet:acme-private-subnet-2
+
+security group acme-webserver-sg
+
+Auto-assign public IP: enable
+#To get the accesspoint below, we musts go to our AWS file system > click on attach 
+and copy the EFS mount helper code
+```
+# EFS mount code
+sudo mount -t efs -o tls,accesspoint=fsap-0312e113542083fb8 fs-0bbd902fd8df2ef22:/ efs
+# RDS endpoint
+acme-database.cpil7ry1shut.eu-west-2.rds.amazonaws.com
+```
+userdata:
+```
+#!/bin/bash
+mkdir /var/www/
+sudo mount -t efs -o tls,accesspoint=fsap-0c7880228faf9c8ef fs-0786f6c06023ceac5:/ /var/www/
+yum install -y httpd 
+systemctl start httpd
+systemctl enable httpd
+yum module reset php -y
+yum module enable php:remi-7.4 -y
+yum install -y php php-common php-mbstring php-opcache php-intl php-xml php-gd php-curl php-mysqlnd php-fpm php-json
+systemctl start php-fpm
+systemctl enable php-fpm
+git clone https://github.com/DrSaaS/tooling-1.git
+mkdir /var/www/html
+cp -R /tooling-1/html/*  /var/www/html/
+cd /tooling-1
+mysql -h acme-database.cpil7ry1shut.eu-west-2.rds.amazonaws.com -u acmeadmin -p toolingdb < tooling-db.sql
+cd /var/www/html/
+touch healthstatus
+sed -i "s/$db = mysqli_connect('mysql.tooling.svc.cluster.local', 'admin', 'admin', 'tooling');
+/$db = mysqli_connect('acme-database.cpil7ry1shut.eu-west-2.rds.amazonaws.com', 'acmeadmin', 'acmepassword', 'toolingdb');/g" functions.php
+chcon -t httpd_sys_rw_content_t /var/www/html/ -R
+systemctl restart httpd
+
+```
+
+- Create launch template
+- Successfully created  
+---
+![Launch Templates](./images/launch-templates.JPG)
+
+
+
 
 
 
