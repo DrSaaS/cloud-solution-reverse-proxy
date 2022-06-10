@@ -973,11 +973,24 @@ acme-notification
 
 
 
+---
+### CREATE RECORDS FOR OUR LOAD BALANCERS
+---
+
+1. GO TO ROUTE 53 > Hosted zones>workachoo.com > create record
+
+Alias:yes
+
+![DNS RECORDS](./images/dns-records.JPG)  
 
 
 
+Wordpress and tooling instances failed health checks and had the following statusses in the target groups
+- Draining - Target deregistration is in progress
+- Unhealthy - Health checks failed
 
-
+![HEALTH CHECK FAILED TOOLING](./images/healthchecksfailed.JPG)  
+![HEALTH CHECK FAILED WORDPRESS](./images/healthchecksfailed2.JPG)  
 
 
 
