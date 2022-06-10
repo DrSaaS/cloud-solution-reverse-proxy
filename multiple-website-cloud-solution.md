@@ -806,7 +806,140 @@ systemctl restart httpd
 
 
 
+---
+The next task is to create the autoscaling groups
+---
+BASTION ASG
+---
 
+Name: acme-bastion-asg
+
+Launch template: acme-bastion-template
+
+
+adhere to launch template: selected  (default)
+
+
+VPC: acme-vpc
+
+Subnet: Public subnet 1 and Public subnet 2
+
+
+No load balancer selected(default)
+
+
+check ELB health check
+
+
+Group size: leave all at 1 for now
+Desired  1
+Minimum  1
+Maximum  1
+
+
+Scaling Policy > Target tracking scaling policy 
+
+Metric Type: Average CPU Utilization
+
+Target: 90
+
+
+Add a topic: create acme notification
+
+Tags   Name: bastion-asg
+
+
+Click create autoscaling group
+
+
+
+
+
+NGINX ASG
+---
+
+Name: nginx-asg
+
+Launch template: acme-nginx-template
+
+
+adhere to launch template: selected  (default)
+
+
+VPC: acme-vpc
+
+Subnet: Public subnet 1 and Public subnet 2
+
+
+Attach to an existing load balancer: Choose from your load balancer target groupsHealth checks: 
+
+
+check ELB health check
+
+
+Group size: leave all at 1 for now
+Desired  1
+Minimum  1
+Maximum  1
+
+
+Scaling Policy > Target tracking scaling policy 
+
+Metric Type: Average CPU Utilization
+
+Target: 90
+
+
+Add a topic: create acme notification
+
+Tags   Name: nginx-asg
+
+
+Click create autoscaling group
+
+
+---
+Before creating the wordpress ASG, I will go into the bastion to create the wordpress database,
+---
+
+I terminated the instances used to create the AMI's as they are no longer needed.
+webserver
+bastion
+nginx
+
+
+I used mobaxterm to ssh into the bastion instance  acme-bastion
+settings > configuration> ssh > add private key location +
+
+ssh -A ec2-user@<bastionpublicipaddress>
+
+to connect to the RDS database
+
+mysql -h databaseendpoit -u 
+```
+mysql -h acme-database.cpil7ry1shut.eu-west-2.rds.amazonaws.com -u acmeadmin -p
+
+```
+
+This will prompt for database password which is acmepassword
+
+
+![Bastion mysql login](./images/bastion-mysql-login.JPG)
+
+```
+create database wordpressdb;
+
+create database toolingdb;
+
+show databases;
+exit;
+```
+
+
+![databases created](./images/databases-created.JPG)
+
+
+I checked the nginx target group to ensure that the instance is healthy.
 
 
 
