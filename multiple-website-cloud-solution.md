@@ -908,7 +908,7 @@ bastion
 nginx
 
 
-I used mobaxterm to ssh into the bastion instance  acme-bastion
+I used mobaxterm to ssh into the bastion instance (launch template) acme-bastion
 settings > configuration> ssh > add private key location +
 
 ssh -A ec2-user@<bastionpublicipaddress>
@@ -941,22 +941,56 @@ exit;
 
 I checked the nginx target group to ensure that the instance is healthy.
 
+SUCCESS: The instances were healthy
+
+
+
+### CREATE AUTOCALING GROUP FOR WEBSERVERS
+## Creat autoscaling group for WORDPRESS
+---
+Name: acme-wordpress
+Template: acme-wordpress-template
+
+subnets: private-subnet1 and private-subnet2
+Attach existing load balancer target: acme-wordpress-target
+check ELB
+Target tracking  - average CPU 90%
+acme-notification
+Tag: acme-wordpress
+
+
+## Creat autoscaling group forTOOLING
+---
+Name: acme-tooling
+Template: acme-tooling-template
+
+subnets: private-subnet1 and private-subnet2
+Attach existing load balancer target: acme-tooling-target
+check ELB
+Target tracking  - average CPU 90%
+acme-notification
 
 
 
 
+---
+### CREATE RECORDS FOR OUR LOAD BALANCERS
+---
+
+1. GO TO ROUTE 53 > Hosted zones>workachoo.com > create record
+
+Alias:yes
+
+![DNS RECORDS](./images/dns-records.JPG)  
 
 
 
+Wordpress and tooling instances failed health checks and had the following statusses in the target groups
+- Draining - Target deregistration is in progress
+- Unhealthy - Health checks failed
 
-
-
-
-
-
-
-
-
+![HEALTH CHECK FAILED TOOLING](./images/healthchecksfailed.JPG)  
+![HEALTH CHECK FAILED WORDPRESS](./images/healthchecksfailed2.JPG)  
 
 
 
