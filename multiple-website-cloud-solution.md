@@ -562,7 +562,7 @@ NGINX LAUNCH TEMPLATE
 ---
 acme-nginx-template
 
-description: Template for bastion
+description: Template for nginx
 
 Application and OS  Images: acme-nginx-ami
 
@@ -584,7 +584,12 @@ userdata:
 yum install -y nginx
 systemctl start nginx
 systemctl enable nginx
-git clone https://github.com/Livingstone95/ACS-project-config.git
+I forked https://github.com/Livingstone95/ACS-project-config.git and edited reverse.conf
+and user data as follows 
+
+USERDATA
+---
+git clone https://github.com/DrSaaS/ACS-project-config.git
 mv /ACS-project-config/reverse.conf /etc/nginx/
 mv /etc/nginx/nginx.conf /etc/nginx/nginx.conf-distro
 cd /etc/nginx/
@@ -595,6 +600,73 @@ rm -rf reverse.conf
 rm -rf /ACS-project-config
 
 ```
+
+    REVERSE.CONF (EDITED HOST WITH DNS NAME OF INTERNAL LOAD BALANCER AND SERVER_NAME TO *.workachoo.com)
+    ---
+
+    ```
+user nginx;
+worker_processes auto;
+error_log /var/log/nginx/error.log;
+pid /run/nginx.pid;
+
+# Load dynamic modules. See /usr/share/doc/nginx/README.dynamic.
+include /usr/share/nginx/modules/*.conf;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  /var/log/nginx/access.log  main;
+
+    sendfile            on;
+    tcp_nopush          on;
+    tcp_nodelay         on;
+    keepalive_timeout   65;
+    types_hash_max_size 2048;
+
+    
+    default_type        application/octet-stream;
+
+    # Load modular configuration files from the /etc/nginx/conf.d directory.
+    # See http://nginx.org/en/docs/ngx_core_module.html#include
+    # for more information.
+    include /etc/nginx/conf.d/*.conf;
+
+     server {
+        listen       80;
+        listen       443 http2 ssl;
+        listen       [::]:443 http2 ssl;
+        root          /var/www/html;
+        server_name  *.workachoo.com;
+        
+        
+        ssl_certificate /etc/ssl/certs/ACS.crt;
+        ssl_certificate_key /etc/ssl/private/ACS.key;
+        ssl_dhparam /etc/ssl/certs/dhparam.pem;
+
+      
+
+        location /healthstatus {
+        access_log off;
+        return 200;
+       }
+    
+         
+        location / {
+            proxy_set_header             Host $host;
+            proxy_pass                   https://internal-acme-int-lb-1542537714.eu-west-2.elb.amazonaws.com/; 
+           }
+    }
+}
+
+
+    ```
 
 - Create luanch template
 - Successfully created
